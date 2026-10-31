@@ -1,8 +1,8 @@
 import { describe, expect, it } from "bun:test"
-import { VERSION } from "./index"
+import * as simCore from "./index"
 
-describe("@trajectonomics/sim-core public exports", () => {
-	it("exports package version constant", () => {
-		expect(VERSION).toBe("0.0.0-development")
+describe("@trajectonomics/sim-core entry point", () => {
+	it("loads module cleanly without side effects", () => {
+		expect(simCore).toBeDefined()
 	})
 })

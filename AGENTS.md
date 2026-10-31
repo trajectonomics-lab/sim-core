@@ -15,7 +15,7 @@ Instructions for AI coding agents in `trajectonomics-lab/sim-core` (`@trajectono
    - Strict isolatedDeclarations typecheck (`tsc -p tsconfig.json && tsc -p tsconfig.test.json`).
    - Clean package build (`tsdown`), strict packaging (`publint --strict`), and node16 type checks (`attw`).
    - Run `bun run format` to auto-fix formatting and imports. Do not loosen `tsconfig.base.json` or `biome.json` to make an error go away.
-6. Never edit `version` in `package.json` and never run `npm publish` locally. Merges to `main` publish alphas; a stable release is the manual Release workflow. PR titles are conventional commits (`feat:`, `fix:`, `feat!:` ...) because they decide the next version.
+6. Never edit `version` in `package.json` manually and never run `npm publish` locally. Releases are handled via GitHub Actions workflows or git tags (`v*`). PR titles should follow conventional commits (`feat:`, `fix:`, `chore:`, `feat!:` ...).
 
 ## Core Simulation Principles
 
