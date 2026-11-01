@@ -1,0 +1,311 @@
+[
+	{
+		"name": "freelancer-day",
+		"baseline": {
+			"schemaVersion": 1,
+			"balances": [
+				{
+					"account": "cash",
+					"amount": 15000000
+				},
+				{
+					"account": "tax-reserve",
+					"amount": 2000000
+				},
+				{
+					"account": "ssf",
+					"amount": 8000000
+				},
+				{
+					"account": "equipment-loan",
+					"amount": 9000000
+				}
+			]
+		},
+		"scenario": {
+			"schemaVersion": 1,
+			"currency": "THB",
+			"economy": {
+				"inflation": 200
+			},
+			"accounts": [
+				{
+					"id": "cash",
+					"kind": "asset",
+					"rate": 0
+				},
+				{
+					"id": "tax-reserve",
+					"kind": "asset",
+					"rate": 100
+				},
+				{
+					"id": "ssf",
+					"kind": "asset",
+					"rate": 450,
+					"lockedUntil": "2036-06-30"
+				},
+				{
+					"id": "equipment-loan",
+					"kind": "liability",
+					"rate": 700
+				},
+				{
+					"id": "brokerage",
+					"kind": "asset",
+					"rate": 600
+				}
+			],
+			"flows": [
+				{
+					"id": "client-retainer",
+					"kind": "income",
+					"earned": true,
+					"amount": 4500000,
+					"frequency": "monthly",
+					"start": "2026-01-31",
+					"growth": "inflation"
+				},
+				{
+					"id": "project-fee",
+					"kind": "income",
+					"earned": true,
+					"amount": 2000000,
+					"frequency": "quarterly",
+					"start": "2026-02-15",
+					"end": "2031-02-15",
+					"growth": {
+						"bps": 0
+					}
+				},
+				{
+					"id": "dividend",
+					"kind": "income",
+					"earned": false,
+					"amount": 300000,
+					"frequency": "annual",
+					"start": "2027-04-30",
+					"growth": {
+						"bps": 100
+					}
+				},
+				{
+					"id": "living",
+					"kind": "expense",
+					"amount": 2200000,
+					"frequency": "monthly",
+					"start": "2026-01-01",
+					"growth": "inflation"
+				},
+				{
+					"id": "ssf-top-up",
+					"kind": "contribution",
+					"target": "ssf",
+					"amount": 1500000,
+					"frequency": "quarterly",
+					"start": "2026-03-31",
+					"end": "2035-12-31",
+					"growth": {
+						"bps": 0
+					}
+				},
+				{
+					"id": "loan-payment",
+					"kind": "contribution",
+					"target": "equipment-loan",
+					"amount": 350000,
+					"frequency": "monthly",
+					"start": "2026-01-10",
+					"growth": {
+						"bps": 0
+					}
+				}
+			],
+			"cashflow": {
+				"surplus": [
+					{
+						"account": "tax-reserve",
+						"upTo": 5000000
+					},
+					{
+						"account": "brokerage"
+					}
+				],
+				"withdraw": ["cash", "tax-reserve", "brokerage", "ssf"]
+			}
+		},
+		"timeline": {
+			"start": "2026-01-01",
+			"horizon": "2051-01-01",
+			"resolution": "day"
+		},
+		"sha256": "b792c9abb66ba6c3aa05a0aca625b7b410a4ce24e4d80f41dd5d447aa91adffa"
+	},
+	{
+		"name": "thai-employee-month",
+		"baseline": {
+			"schemaVersion": 1,
+			"balances": [
+				{
+					"account": "cash",
+					"amount": 5000000
+				},
+				{
+					"account": "emergency-fund",
+					"amount": 30000000
+				},
+				{
+					"account": "rmf",
+					"amount": 20000000
+				},
+				{
+					"account": "mortgage",
+					"amount": 250000000
+				}
+			]
+		},
+		"scenario": {
+			"schemaVersion": 1,
+			"currency": "THB",
+			"economy": {
+				"inflation": 250
+			},
+			"accounts": [
+				{
+					"id": "cash",
+					"kind": "asset",
+					"rate": 50
+				},
+				{
+					"id": "emergency-fund",
+					"kind": "asset",
+					"rate": 150
+				},
+				{
+					"id": "rmf",
+					"kind": "asset",
+					"rate": 500,
+					"lockedUntil": "2046-01-01"
+				},
+				{
+					"id": "mortgage",
+					"kind": "liability",
+					"rate": 450
+				}
+			],
+			"flows": [
+				{
+					"id": "salary",
+					"kind": "income",
+					"earned": true,
+					"amount": 6000000,
+					"frequency": "monthly",
+					"start": "2026-01-25",
+					"growth": {
+						"bps": 300
+					}
+				},
+				{
+					"id": "bonus",
+					"kind": "income",
+					"earned": true,
+					"amount": 12000000,
+					"frequency": "once",
+					"start": "2026-03-31",
+					"growth": "inflation"
+				},
+				{
+					"id": "living",
+					"kind": "expense",
+					"amount": 2500000,
+					"frequency": "monthly",
+					"start": "2026-01-01",
+					"growth": "inflation"
+				},
+				{
+					"id": "rmf-monthly",
+					"kind": "contribution",
+					"target": "rmf",
+					"amount": 500000,
+					"frequency": "monthly",
+					"start": "2026-01-25",
+					"end": "2045-12-25",
+					"growth": {
+						"bps": 0
+					}
+				},
+				{
+					"id": "mortgage-payment",
+					"kind": "contribution",
+					"target": "mortgage",
+					"amount": 1800000,
+					"frequency": "monthly",
+					"start": "2026-01-05",
+					"end": "2050-12-05",
+					"growth": {
+						"bps": 0
+					}
+				}
+			],
+			"cashflow": {
+				"surplus": [
+					{
+						"account": "cash",
+						"upTo": 10000000
+					},
+					{
+						"account": "emergency-fund"
+					}
+				],
+				"withdraw": ["emergency-fund", "cash", "rmf"]
+			}
+		},
+		"timeline": {
+			"start": "2026-01-01",
+			"horizon": "2056-01-01",
+			"resolution": "month"
+		},
+		"sha256": "e4028387a12662fd3bea328941fae532aeccded7977059fe63457adbd23f357c"
+	},
+	{
+		"name": "leap-tie-day",
+		"baseline": {
+			"schemaVersion": 1,
+			"balances": [
+				{
+					"account": "cash",
+					"amount": 1
+				}
+			]
+		},
+		"scenario": {
+			"schemaVersion": 1,
+			"currency": "THB",
+			"economy": {
+				"inflation": 300
+			},
+			"accounts": [
+				{
+					"id": "cash",
+					"kind": "asset",
+					"rate": 5000
+				}
+			],
+			"flows": [],
+			"cashflow": {
+				"surplus": [
+					{
+						"account": "cash"
+					}
+				],
+				"withdraw": []
+			}
+		},
+		"timeline": {
+			"start": "2027-02-28",
+			"horizon": "2029-03-01",
+			"resolution": "day"
+		},
+		"sha256": "dbe95f1774b8d5d7c598cf52fd43e4765ea0e81889a13356a8510171dc03f4ca"
+	}
+]

@@ -40,9 +40,11 @@
 		"build": "tsdown",
 		"test": "bun test",
 		"typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.test.json",
-		"lint": "biome ci --error-on-warnings .",
+		"lint": "biome ci --colors=off --error-on-warnings .",
 		"format": "biome check --write .",
-		"check": "bun run lint && bun run typecheck && bun test && bun run build && bun run lint:package",
+		"check": "bun run lint && bun run typecheck && bun test && bun run build && bun run parity && bun run lint:package",
+		"parity": "node scripts/parity-check.mjs",
+		"parity:update": "bun scripts/parity-update.ts && biome format --write parity/cases.json",
 		"lint:package": "publint --strict && attw --pack . --profile node16"
 	},
 	"peerDependencies": {
