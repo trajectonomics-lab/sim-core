@@ -14,6 +14,7 @@
 	},
 	"formatter": { "indentStyle": "tab", "lineWidth": 100 },
 	"javascript": { "formatter": { "semicolons": "asNeeded", "quoteStyle": "double" } },
+	"plugins": ["./biome-plugins/no-nondeterminism.grit"],
 	"linter": {
 		"enabled": true,
 		"rules": {

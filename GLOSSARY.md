@@ -22,8 +22,12 @@ _Avoid_: Date list, time steps
 The deterministic output of a Baseline, Scenario and Timeline: states and cashflows over the horizon.
 _Avoid_: Forecast, prediction, simulation run
 
+**Occurrence**:
+A date on which at least one Flow lands. Only Occurrences change balances; the Timeline's `start` and `horizon` are both inclusive.
+_Avoid_: Tick, step, period
+
 **Account**:
-A named balance with an explicit rule in the Scenario: `kind` (`asset` or `liability`), rate in basis points, optional `lockedUntil`. Every account with a balance must have a rule. A liability's balance is the positive amount owed.
+A named balance with an explicit rule in the Scenario: `kind` (`asset` or `liability`), effective annual rate in basis points (one year grows the balance by exactly the rate), optional `lockedUntil`. Every account with a balance must have a rule. A liability's balance is the positive amount owed.
 _Avoid_: Wallet, holding
 
 **Flow**:
@@ -36,6 +40,18 @@ A Flow that moves money from cashflow into an Account. Not an expense: net worth
 **Cashflow**:
 The routing rules for net money each time flows land: ordered `surplus` steps (account, optional fixed `upTo`) and an ordered `withdraw` list.
 _Avoid_: Income/expense delta
+
+**Shortfall**:
+Money owed on an Occurrence that no unlocked Account in the `withdraw` list can supply. The Projection ends on that date. The engine never refuses a Flow because of it; callers adjust their own rules (for example, not funding a locked Account while short).
+_Avoid_: Overdraft, deficit
+
+**Runs-out date**:
+The date of the first Shortfall, recorded with the unmet amount. Absent when money lasts to the horizon.
+_Avoid_: Depletion date, bankruptcy
+
+**Net worth / Accessible net worth**:
+Net worth counts every Account, including locked ones. Accessible net worth leaves out Accounts before their `lockedUntil`; it is what Cashflow can actually draw on.
+_Avoid_: Liquid assets, spendable
 
 **Financial Independence (FI)**:
 The milestone point along a Projection timeline where passive cashflow or sustainable portfolio withdrawals reliably cover projected living expenses.
