@@ -22,11 +22,15 @@ export function checkAccounts(value: unknown, path: Path, emit: Emit): void {
 	checkUnique(value, path, "id", emit)
 }
 
-/** Declared account ids (first declaration wins) mapped to their raw `kind`. */
-export function indexAccounts(accounts: unknown): AccountIndex {
+/**
+ * Declared account ids (first declaration wins) mapped to their raw `kind`. `undefined` when
+ * `accounts` is not an array, so reference checks are skipped rather than flooding the output.
+ */
+export function indexAccounts(accounts: unknown): AccountIndex | undefined {
+	if (!Array.isArray(accounts)) return undefined
 	const index = new Map<string, unknown>()
-	if (!Array.isArray(accounts)) return index
-	for (const item of accounts as readonly unknown[]) {
+	for (let i = 0; i < accounts.length; i++) {
+		const item: unknown = accounts[i]
 		if (isRecord(item) && typeof item["id"] === "string" && !index.has(item["id"])) {
 			index.set(item["id"], item["kind"])
 		}

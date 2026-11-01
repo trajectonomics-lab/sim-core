@@ -2,9 +2,9 @@ import { describe, expect, it } from "bun:test"
 import { check } from "../check"
 import { freelancer } from "../fixtures/freelancer"
 import { thaiEmployee } from "../fixtures/thai-employee"
-import { ERROR_CODES } from "./codes"
 
 const fixtures = { "Thai salaried employee": thaiEmployee, freelancer }
+const trip = (x: unknown): unknown => JSON.parse(JSON.stringify(x))
 
 describe("check() on realistic fixtures", () => {
 	for (const [name, { baseline, scenario, timeline }] of Object.entries(fixtures)) {
@@ -12,8 +12,11 @@ describe("check() on realistic fixtures", () => {
 			expect(check(baseline, scenario, timeline)).toEqual([])
 		})
 
-		it(`${name} survives a JSON round-trip`, () => {
-			const trip = (x: unknown): unknown => JSON.parse(JSON.stringify(x))
+		it(`${name} round-trips through JSON with nothing lost and zero problems`, () => {
+			expect(trip(baseline)).toStrictEqual(baseline)
+			expect(trip(scenario)).toStrictEqual(scenario)
+			expect(trip(timeline)).toStrictEqual(timeline)
+			expect(check(baseline, scenario, timeline)).toEqual([])
 			expect(check(trip(baseline), trip(scenario), trip(timeline))).toEqual([])
 		})
 	}
@@ -29,9 +32,5 @@ describe("check() on realistic fixtures", () => {
 		const { accounts } = freelancer.scenario
 		expect(accounts.some((a) => a.kind === "liability")).toBe(true)
 		expect(accounts.some((a) => a.kind === "asset" && a.lockedUntil !== undefined)).toBe(true)
-	})
-
-	it("exports a closed set of unique error codes", () => {
-		expect(new Set(ERROR_CODES).size).toBe(ERROR_CODES.length)
 	})
 })

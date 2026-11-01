@@ -1,3 +1,7 @@
+/**
+ * TEST-ONLY helpers (edit the Thai-employee fixture, assert exact problem lists). Not part of the
+ * published API: `src/index.ts` must never re-export this file, and the build excludes it.
+ */
 import { check } from "./check"
 import type { ErrorCode, Path, Problem } from "./check/codes"
 import { thaiEmployee } from "./fixtures/thai-employee"

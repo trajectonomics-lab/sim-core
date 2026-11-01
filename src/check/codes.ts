@@ -1,4 +1,4 @@
-export const ERROR_CODES = [
+const CODES = [
 	"UNSUPPORTED_SCHEMA_VERSION",
 	"NOT_AN_OBJECT",
 	"NOT_AN_ARRAY",
@@ -22,7 +22,10 @@ export const ERROR_CODES = [
 	"LIABILITY_MISUSE",
 ] as const
 
-export type ErrorCode = (typeof ERROR_CODES)[number]
+/** The closed set of problem codes. Frozen so consumers cannot mutate it at runtime. */
+export const ERROR_CODES: typeof CODES = Object.freeze(CODES)
+
+export type ErrorCode = (typeof CODES)[number]
 
 /** Location of a problem: a segment is an object key or an array index. */
 export type Path = readonly (string | number)[]

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "bun:test"
+import { thaiEmployee } from "../fixtures/thai-employee"
 import { expected, problemsFor, REMOVE } from "../testing"
+
+function emptyIdFlows(): unknown[] {
+	return thaiEmployee.scenario.flows.map((flow, i) => (i < 2 ? { ...flow, id: "" } : flow))
+}
 
 describe("check() ids and references", () => {
 	it("rejects duplicate account ids", () => {
@@ -19,6 +24,26 @@ describe("check() ids and references", () => {
 		expect(problemsFor({ baseline: [["balances", 1, "account"], "cash"] })).toEqual(
 			expected("DUPLICATE_ID", ["baseline", "balances", 1, "account"]),
 		)
+	})
+
+	it("rejects a repeated account in withdraw", () => {
+		expect(problemsFor({ scenario: [["cashflow", "withdraw", 3], "cash"] })).toEqual(
+			expected("DUPLICATE_ID", ["scenario", "cashflow", "withdraw", 3]),
+		)
+	})
+
+	it("rejects a repeated account in surplus", () => {
+		const step = { account: "cash", upTo: 5 }
+		expect(problemsFor({ scenario: [["cashflow", "surplus", 2], step] })).toEqual(
+			expected("DUPLICATE_ID", ["scenario", "cashflow", "surplus", 2, "account"]),
+		)
+	})
+
+	it("reports only EMPTY_STRING for two empty flow ids, not DUPLICATE_ID", () => {
+		expect(problemsFor({ scenario: [["flows"], emptyIdFlows()] })).toEqual([
+			{ code: "EMPTY_STRING", path: ["scenario", "flows", 0, "id"] },
+			{ code: "EMPTY_STRING", path: ["scenario", "flows", 1, "id"] },
+		])
 	})
 
 	it("rejects a baseline balance whose account is not declared", () => {
@@ -82,10 +107,13 @@ describe("check() ids and references", () => {
 		)
 	})
 
-	it("rejects kind-specific keys on the wrong flow kind", () => {
+	it("rejects earned on a non-income flow", () => {
 		expect(problemsFor({ scenario: [["flows", 2, "earned"], true] })).toEqual(
 			expected("UNKNOWN_KEY", ["scenario", "flows", 2, "earned"]),
 		)
+	})
+
+	it("rejects target on a non-contribution flow", () => {
 		expect(problemsFor({ scenario: [["flows", 0, "target"], "cash"] })).toEqual(
 			expected("UNKNOWN_KEY", ["scenario", "flows", 0, "target"]),
 		)

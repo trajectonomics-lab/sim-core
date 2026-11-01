@@ -1,9 +1,7 @@
 import type { AccountIndex, Check, Emit, Path } from "./codes"
 import { balanceRef } from "./refs"
 import { amount } from "./scalars"
-import { checkShape, checkUnique, list, req } from "./shape"
-
-const anyVersion: Check = () => {}
+import { anyVersion, checkShape, checkUnique, list, req } from "./shape"
 
 export function checkBaseline(
 	value: unknown,

@@ -15,5 +15,5 @@ export type AccountId = string
 export type Frequency = (typeof FREQUENCIES)[number]
 export type Resolution = (typeof RESOLUTIONS)[number]
 
-/** `inflation` follows `economy.inflation`; `{ bps }` is a fixed yearly step. */
+/** `"inflation"` follows `economy.inflation`; `{ bps }` is a fixed yearly step (may be negative). */
 export type Growth = "inflation" | { readonly bps: BasisPoints }

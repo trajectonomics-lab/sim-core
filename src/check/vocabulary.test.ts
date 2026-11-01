@@ -1,6 +1,9 @@
 import { describe, expect, it } from "bun:test"
 import { expected, problemsFor } from "../testing"
 
+const growthAt = ["flows", 0, "growth"] as const
+const growthPath = ["scenario", ...growthAt] as const
+
 describe("check() closed vocabulary", () => {
 	it("rejects an unknown account kind", () => {
 		expect(problemsFor({ scenario: [["accounts", 0, "kind"], "equity"] })).toEqual(
@@ -34,17 +37,49 @@ describe("check() closed vocabulary", () => {
 		)
 	})
 
-	it("accepts growth inflation and { bps }", () => {
-		expect(problemsFor({ scenario: [["flows", 0, "growth"], "inflation"] })).toEqual([])
-		expect(problemsFor({ scenario: [["flows", 0, "growth"], { bps: 0 }] })).toEqual([])
+	it('accepts growth "inflation"', () => {
+		expect(problemsFor({ scenario: [growthAt, "inflation"] })).toEqual([])
 	})
 
-	it("rejects any other growth", () => {
-		expect(problemsFor({ scenario: [["flows", 0, "growth"], "wage"] })).toEqual(
+	it("accepts growth { bps } with a positive, zero or negative integer", () => {
+		for (const bps of [300, 0, -150]) {
+			expect(problemsFor({ scenario: [growthAt, { bps }] })).toEqual([])
+		}
+	})
+
+	it.each([
+		["a string other than inflation", "wage"],
+		["a differently cased inflation", "Inflation"],
+		["a bare number", 300],
+		["null", null],
+		["an array", [300]],
+	])("rejects growth given as %s", (_name, value) => {
+		expect(problemsFor({ scenario: [growthAt, value] })).toEqual(
 			expected("INVALID_GROWTH", ["scenario", "flows", 0, "growth"]),
 		)
-		expect(problemsFor({ scenario: [["flows", 0, "growth"], 300] })).toEqual(
-			expected("INVALID_GROWTH", ["scenario", "flows", 0, "growth"]),
+	})
+
+	it("rejects growth { bps } with a fractional bps", () => {
+		expect(problemsFor({ scenario: [growthAt, { bps: 1.5 }] })).toEqual(
+			expected("NOT_SAFE_INTEGER", [...growthPath, "bps"]),
+		)
+	})
+
+	it("rejects growth { bps } with a string bps", () => {
+		expect(problemsFor({ scenario: [growthAt, { bps: "300" }] })).toEqual(
+			expected("NOT_SAFE_INTEGER", [...growthPath, "bps"]),
+		)
+	})
+
+	it("rejects growth {} for missing bps", () => {
+		expect(problemsFor({ scenario: [growthAt, {}] })).toEqual(
+			expected("MISSING_KEY", [...growthPath, "bps"]),
+		)
+	})
+
+	it("rejects an unknown key next to bps in growth", () => {
+		expect(problemsFor({ scenario: [growthAt, { bps: 1, rate: 2 }] })).toEqual(
+			expected("UNKNOWN_KEY", [...growthPath, "rate"]),
 		)
 	})
 

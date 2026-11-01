@@ -1,7 +1,8 @@
 import { SCHEMA_VERSION } from "../vocab"
 import { indexAccounts } from "./accounts"
 import { checkBaseline } from "./baseline"
-import type { AccountIndex, Emit, Path, Problem } from "./codes"
+import type { Emit, Path, Problem } from "./codes"
+import { makeGuard } from "./guard"
 import { checkScenario } from "./scenario"
 import { isRecord } from "./shape"
 import { checkTimeline } from "./timeline"
@@ -15,17 +16,22 @@ function versionOk(value: unknown, path: Path, emit: Emit): boolean {
 
 /**
  * Validates all three inputs in one pass. `[]` means valid; the engine refuses to run otherwise.
- * Accepts arbitrary values and never throws.
+ * Accepts arbitrary values and never throws: an input that cannot be read at all (a throwing
+ * getter, a revoked Proxy) yields a single `NOT_AN_OBJECT` problem at its root.
  */
 export function check(baseline: unknown, scenario: unknown, timeline: unknown): readonly Problem[] {
 	const problems: Problem[] = []
 	const emit: Emit = (code, path) => void problems.push({ code, path })
-	const scenarioOk = versionOk(scenario, ["scenario"], emit)
-	const baselineOk = versionOk(baseline, ["baseline"], emit)
-	const accounts: AccountIndex | undefined =
-		scenarioOk && isRecord(scenario) ? indexAccounts(scenario["accounts"]) : undefined
-	if (baselineOk) checkBaseline(baseline, ["baseline"], accounts, emit)
-	if (scenarioOk) checkScenario(scenario, ["scenario"], accounts, emit)
-	checkTimeline(timeline, ["timeline"], emit)
+	const guard = makeGuard(emit)
+	const scenarioOk = guard("scenario", false, () => versionOk(scenario, ["scenario"], emit))
+	const baselineOk = guard("baseline", false, () => versionOk(baseline, ["baseline"], emit))
+	const accounts = guard("scenario", undefined, () =>
+		scenarioOk && isRecord(scenario) ? indexAccounts(scenario["accounts"]) : undefined,
+	)
+	if (baselineOk)
+		guard("baseline", undefined, () => checkBaseline(baseline, ["baseline"], accounts, emit))
+	if (scenarioOk)
+		guard("scenario", undefined, () => checkScenario(scenario, ["scenario"], accounts, emit))
+	guard("timeline", undefined, () => checkTimeline(timeline, ["timeline"], emit))
 	return problems
 }

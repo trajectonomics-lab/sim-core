@@ -9,6 +9,9 @@ export type Shape = Readonly<Record<string, Field>>
 export const req = (check: Check): Field => ({ required: true, check })
 export const opt = (check: Check): Field => ({ required: false, check })
 
+/** Accepts any value: `schemaVersion` is validated up front by `check()`, not per object. */
+export const anyVersion: Check = () => {}
+
 export function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
 	return typeof value === "object" && value !== null && !Array.isArray(value)
 }
@@ -42,23 +45,43 @@ export function checkShape(
 	return value
 }
 
-/** Builds a check that validates every element of an array with `item`. */
+/**
+ * Builds a check that validates every element of an array with `item`. Walks every index, so a
+ * sparse-array hole reaches `item` as `undefined` instead of being skipped.
+ */
 export function list(item: Check): Check {
 	return (value, path, emit) => {
 		if (!Array.isArray(value)) return emit("NOT_AN_ARRAY", path)
-		value.forEach((element: unknown, index) => {
-			item(element, [...path, index], emit)
-		})
+		for (let index = 0; index < value.length; index++) item(value[index], [...path, index], emit)
 	}
 }
 
-/** Emits `DUPLICATE_ID` at the second and later occurrences of a string `key` in `items`. */
-export function checkUnique(items: unknown, path: Path, key: string, emit: Emit): void {
+function scanDuplicates(
+	items: unknown,
+	path: Path,
+	suffix: Path,
+	idOf: (item: unknown) => unknown,
+	emit: Emit,
+): void {
 	if (!Array.isArray(items)) return
-	const seen = new Set<unknown>()
-	items.forEach((item: unknown, index) => {
-		if (!isRecord(item) || typeof item[key] !== "string") return
-		if (seen.has(item[key])) emit("DUPLICATE_ID", [...path, index, key])
-		seen.add(item[key])
-	})
+	const seen = new Set<string>()
+	for (let index = 0; index < items.length; index++) {
+		const id = idOf(items[index])
+		if (typeof id !== "string" || id === "") continue
+		if (seen.has(id)) emit("DUPLICATE_ID", [...path, index, ...suffix])
+		seen.add(id)
+	}
+}
+
+/**
+ * Emits `DUPLICATE_ID` at the second and later occurrences of a string `key` in `items`.
+ * Empty ids are left to `EMPTY_STRING` and never count as duplicates.
+ */
+export function checkUnique(items: unknown, path: Path, key: string, emit: Emit): void {
+	scanDuplicates(items, path, [key], (item) => (isRecord(item) ? item[key] : undefined), emit)
+}
+
+/** Like `checkUnique`, for an array of plain string ids (e.g. `cashflow.withdraw`). */
+export function checkUniqueValues(items: unknown, path: Path, emit: Emit): void {
+	scanDuplicates(items, path, [], (item) => item, emit)
 }
