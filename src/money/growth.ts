@@ -1,7 +1,21 @@
 import type { BasisPoints } from "../types"
-import { DAYS_PER_YEAR, dailyFactor, FACTOR_BASE, RATE_SCALE } from "./factor"
-import { powBigInt } from "./pow"
+import { DAYS_PER_YEAR, dailyFactor, RATE_SCALE } from "./factor"
 import { roundHalfUp } from "./round"
+
+const factorPowers: Map<BasisPoints, bigint[]> = new Map()
+const ratePowers: Map<BasisPoints, bigint[]> = new Map()
+
+function powerAt(rate: BasisPoints, exponent: number, rateBase: boolean): bigint {
+	const cache = rateBase ? ratePowers : factorPowers
+	let powers = cache.get(rate)
+	if (powers === undefined) {
+		powers = [1n]
+		cache.set(rate, powers)
+	}
+	const base = rateBase ? RATE_SCALE + BigInt(rate) : dailyFactor(rate)
+	while (powers.length <= exponent) powers.push(powers[powers.length - 1]! * base)
+	return powers[exponent]!
+}
 
 interface FactorParts {
 	readonly numerator: bigint
@@ -19,10 +33,9 @@ function splitDays(days: number): readonly [years: number, remainder: number] {
 /** `(10000 + rate)^years * f^remainder / (10000^years * 10^(30*remainder))`. */
 function factorParts(rate: BasisPoints, days: number): FactorParts {
 	const [years, remainder] = splitDays(days)
-	const factor = dailyFactor(rate)
 	return {
-		numerator: powBigInt(RATE_SCALE + BigInt(rate), years) * powBigInt(factor, remainder),
-		denominator: powBigInt(RATE_SCALE, years) * powBigInt(FACTOR_BASE, remainder),
+		numerator: powerAt(rate, years, true) * powerAt(rate, remainder, false),
+		denominator: powerAt(0, years, true) * powerAt(0, remainder, false),
 	}
 }
 
