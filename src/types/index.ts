@@ -11,5 +11,15 @@ export type {
 	Resolution,
 } from "./common"
 export type { ContributionFlow, ExpenseFlow, Flow, IncomeFlow } from "./flow"
+export type {
+	AccountAmount,
+	InputProblem,
+	Projection,
+	ProjectionProblem,
+	ProjectionResult,
+	ProjectionRow,
+	RunsOut,
+	ValueOverflowProblem,
+} from "./projection"
 export type { Economy, Scenario } from "./scenario"
 export type { Timeline } from "./timeline"

@@ -1,10 +1,11 @@
 /**
  * @trajectonomics/sim-core — Pure, deterministic personal-finance projection engine.
  *
- * Vocabulary types and `check()`. The projection engine lands in a follow-up PR.
+ * Vocabulary types, `check()` and the deterministic projection engine.
  */
 
 export { check } from "./check"
 export type { ErrorCode, Path, Problem } from "./check/codes"
 export { ERROR_CODES } from "./check/codes"
+export { project } from "./engine/project"
 export type * from "./types"
