@@ -11,6 +11,23 @@ export interface ProjectionRow {
 	readonly balances: readonly AccountAmount[]
 	readonly netWorth: MinorUnits
 	readonly accessibleNetWorth: MinorUnits
+	readonly realBalances: readonly AccountAmount[]
+	readonly realNetWorth: MinorUnits
+	readonly realAccessibleNetWorth: MinorUnits
+}
+
+export interface AnnualRollup {
+	readonly index: number
+	readonly from: DateString
+	readonly to: DateString
+	readonly openingNetWorth: MinorUnits
+	readonly closingNetWorth: MinorUnits
+	readonly income: MinorUnits
+	readonly expense: MinorUnits
+	readonly contributions: MinorUnits
+	readonly interest: MinorUnits
+	readonly unmet: MinorUnits
+	readonly partial: boolean
 }
 
 export interface RunsOut {
@@ -20,6 +37,7 @@ export interface RunsOut {
 
 export interface Projection {
 	readonly rows: readonly ProjectionRow[]
+	readonly annual: readonly AnnualRollup[]
 	readonly runsOut?: RunsOut
 }
 

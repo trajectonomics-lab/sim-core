@@ -1,40 +1,14 @@
 import { dailyRowDates, monthlyRowDates } from "../calendar/rows"
 import { check } from "../check"
+import { buildProjection } from "../output/build"
 import type { Baseline, DateString, Scenario, Timeline } from "../types"
-import type {
-	AccountAmount,
-	Projection,
-	ProjectionResult,
-	ProjectionRow,
-	RunsOut,
-} from "../types/projection"
+import type { ProjectionResult } from "../types/projection"
 import { runEngine } from "./run"
-import type { EngineSnapshot } from "./snapshot"
 
 function observationDates(timeline: Timeline): readonly DateString[] {
 	return timeline.resolution === "day"
 		? dailyRowDates(timeline.start, timeline.horizon)
 		: monthlyRowDates(timeline.start, timeline.horizon)
-}
-
-function toAmounts(snapshot: EngineSnapshot): readonly AccountAmount[] {
-	return snapshot.balances.map((balance) => ({
-		account: balance.account,
-		amount: Number(balance.amount),
-	}))
-}
-
-function toRow(snapshot: EngineSnapshot): ProjectionRow {
-	return {
-		date: snapshot.date,
-		balances: toAmounts(snapshot),
-		netWorth: Number(snapshot.netWorth),
-		accessibleNetWorth: Number(snapshot.accessibleNetWorth),
-	}
-}
-
-function toRunsOut(runsOut: { readonly date: DateString; readonly unmet: bigint }): RunsOut {
-	return { date: runsOut.date, unmet: Number(runsOut.unmet) }
 }
 
 /** Runs `check` first, then the deterministic engine; never throws on valid inputs. */
@@ -47,8 +21,7 @@ export function project(
 	if (problems.length > 0) return { ok: false, problems }
 	const result = runEngine(baseline, scenario, timeline, observationDates(timeline))
 	if (!result.ok) return { ok: false, problems: [result.problem] }
-	const rows = result.run.snapshots.map(toRow)
-	const projection: Projection =
-		result.run.runsOut === undefined ? { rows } : { rows, runsOut: toRunsOut(result.run.runsOut) }
-	return { ok: true, projection }
+	const output = buildProjection(result.run, baseline, scenario, timeline)
+	if ("problem" in output) return { ok: false, problems: [output.problem] }
+	return { ok: true, projection: output.projection }
 }

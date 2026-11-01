@@ -13,6 +13,7 @@ export type {
 export type { ContributionFlow, ExpenseFlow, Flow, IncomeFlow } from "./flow"
 export type {
 	AccountAmount,
+	AnnualRollup,
 	InputProblem,
 	Projection,
 	ProjectionProblem,
