@@ -78,13 +78,13 @@ describe("annual roll-ups", () => {
 			flows: [income("pay", 100), expense("bill", 20), contribution("save", "savings", 30)],
 			surplus: [{ account: "cash" }],
 			withdraw: ["cash"],
-			horizon: "2027-01-01",
+			horizon: "2026-12-31",
 		})
 		expect(projection.annual).toEqual([
 			{
 				index: 0,
 				from: "2026-01-01",
-				to: "2027-01-01",
+				to: "2026-12-31",
 				openingNetWorth: 1000,
 				closingNetWorth: 1185,
 				income: 100,
@@ -96,7 +96,7 @@ describe("annual roll-ups", () => {
 			},
 		])
 		const year = projection.annual[0]!
-		expect(year.openingNetWorth + year.income + year.interest - year.expense - year.unmet).toBe(
+		expect(year.openingNetWorth + year.income + year.interest - year.expense + year.unmet).toBe(
 			year.closingNetWorth,
 		)
 	})
@@ -109,8 +109,8 @@ describe("annual roll-ups", () => {
 			horizon: "2027-06-01",
 		})
 		expect(projection.annual.map((year) => [year.from, year.to, year.partial])).toEqual([
-			["2026-01-01", "2027-01-01", false],
-			["2027-01-02", "2027-06-01", true],
+			["2026-01-01", "2026-12-31", false],
+			["2027-01-01", "2027-06-01", true],
 		])
 		expect(projection.annual.map((year) => year.index)).toEqual([0, 1])
 	})
@@ -133,10 +133,11 @@ describe("annual roll-ups", () => {
 			to: "2026-01-15",
 			closingNetWorth: 0,
 			expense: 150,
+			interest: 0,
 			unmet: 50,
 			partial: true,
 		})
-		expect(year.openingNetWorth + year.income + year.interest - year.expense - year.unmet).toBe(
+		expect(year.openingNetWorth + year.income + year.interest - year.expense + year.unmet).toBe(
 			year.closingNetWorth,
 		)
 	})

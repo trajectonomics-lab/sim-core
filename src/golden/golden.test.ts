@@ -6,7 +6,7 @@ import type { Fixture } from "../fixtures/fixture"
 import { freelancer } from "../fixtures/freelancer"
 import { thaiEmployee } from "../fixtures/thai-employee"
 import type { Projection } from "../types/projection"
-import { oracleRun } from "./oracle-sim"
+import { oracleView } from "./oracle-view"
 
 function runFixture(fixture: Fixture): Projection {
 	const result = project(fixture.baseline, fixture.scenario, fixture.timeline)
@@ -14,42 +14,18 @@ function runFixture(fixture: Fixture): Projection {
 	return result.projection
 }
 
-function monthly(fixture: Fixture): Fixture {
-	return { ...fixture, timeline: { ...fixture.timeline, resolution: "month" } }
-}
-
 function expectOracleMatch(fixture: Fixture, projection: Projection): void {
-	const oracle = oracleRun(
+	const view = oracleView(
 		fixture,
 		projection.rows.map((row) => row.date),
 	)
-	expect(oracle.snapshots).toHaveLength(projection.rows.length)
-	projection.rows.forEach((row, index) => {
-		const snapshot = oracle.snapshots[index]!
-		expect(row.date).toBe(snapshot.date)
-		expect(row.balances).toEqual(
-			snapshot.balances.map((item) => ({ account: item.account, amount: Number(item.amount) })),
-		)
-		expect(row.realBalances).toEqual(
-			snapshot.realBalances.map((item) => ({
-				account: item.account,
-				amount: Number(item.amount),
-			})),
-		)
-		expect(row.netWorth).toBe(Number(snapshot.netWorth))
-		expect(row.accessibleNetWorth).toBe(Number(snapshot.accessibleNetWorth))
-		expect(row.realNetWorth).toBe(Number(snapshot.realNetWorth))
-		expect(row.realAccessibleNetWorth).toBe(Number(snapshot.realAccessibleNetWorth))
-	})
-	if (projection.runsOut === undefined) {
-		expect(oracle.runsOut).toBeUndefined()
-	} else {
-		expect(oracle.runsOut).toBeDefined()
-		expect(projection.runsOut).toEqual({
-			date: oracle.runsOut!.date,
-			unmet: Number(oracle.runsOut!.unmet),
-		})
-	}
+	expect(projection.rows).toEqual(view.rows)
+	expect(projection.runsOut).toEqual(view.runsOut)
+	expect(projection.annual).toEqual(view.annual)
+}
+
+function monthly(fixture: Fixture): Fixture {
+	return { ...fixture, timeline: { ...fixture.timeline, resolution: "month" } }
 }
 
 describe("golden fixtures match the independent oracle", () => {
@@ -139,12 +115,11 @@ describe("small purpose-built golden cases", () => {
 		} as const
 		const projection = run(setup)
 		expect(amounts(rowAt(projection, "2027-01-01"))).toEqual({ cash: 2 })
-		expect(projection.annual[0]).toMatchObject({
-			openingNetWorth: 1,
-			closingNetWorth: 2,
-			interest: 1,
-			partial: false,
-		})
+		expect(projection.annual.map((year) => [year.from, year.to, year.closingNetWorth])).toEqual([
+			["2026-01-01", "2026-12-31", 1],
+			["2027-01-01", "2027-01-01", 2],
+		])
+		expect(projection.annual[1]).toMatchObject({ interest: 1, partial: true })
 		expectOracleMatch(makeFixture(setup), projection)
 	})
 })

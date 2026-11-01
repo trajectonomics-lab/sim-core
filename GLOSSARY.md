@@ -26,6 +26,10 @@ _Avoid_: Forecast, prediction, simulation run
 A date on which at least one Flow lands. Only Occurrences change balances; the Timeline's `start` and `horizon` are both inclusive.
 _Avoid_: Tick, step, period
 
+**Annual roll-up**:
+Totals over one twelve-month period of a Projection, running from an anniversary of `start` to the day before the next one. The last period is cut short by the horizon or a Shortfall and marked partial.
+_Avoid_: Year, fiscal year
+
 **Account**:
 A named balance with an explicit rule in the Scenario: `kind` (`asset` or `liability`), effective annual rate in basis points (one year grows the balance by exactly the rate), optional `lockedUntil`. Every account with a balance must have a rule. A liability's balance is the positive amount owed.
 _Avoid_: Wallet, holding
@@ -59,7 +63,7 @@ _Avoid_: Retirement, target date
 
 ## Input Conventions
 
-- All dates are `YYYY-MM-DD`. There are no ages in the core; callers convert ages to dates.
+- All dates are `YYYY-MM-DD`, in years 0001-9998. There are no ages in the core; callers convert ages to dates.
 - All money is integer minor units in one currency per Scenario; callers convert before calling.
 - All rates are integer basis points.
 - Collections are arrays of objects with unique `id`s, never objects keyed by id.

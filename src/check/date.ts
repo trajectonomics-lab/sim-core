@@ -9,11 +9,11 @@ function daysInMonth(year: number, month: number): number {
 	return month === 2 && isLeapYear(year) ? 29 : (MONTH_DAYS[month - 1] ?? 0)
 }
 
-/** Pure calendar arithmetic (no `Date`): a real `YYYY-MM-DD` date in years 0001-9999. */
+/** Pure calendar arithmetic (no `Date`): a real `YYYY-MM-DD` date in years 0001-9998 (so every computed anniversary stays representable). */
 export function isValidDate(value: unknown): value is string {
 	if (typeof value !== "string") return false
 	const match = DATE_SHAPE.exec(value)
 	if (!match) return false
 	const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])]
-	return year >= 1 && day >= 1 && day <= daysInMonth(year, month)
+	return year >= 1 && year <= 9998 && day >= 1 && day <= daysInMonth(year, month)
 }

@@ -16,8 +16,21 @@ export interface OracleRunsOut {
 	readonly unmet: bigint
 }
 
+export interface OracleFlowDay {
+	readonly date: DateString
+	readonly income: bigint
+	readonly expense: bigint
+	readonly contributions: bigint
+}
+
 export interface OracleRun {
 	readonly snapshots: readonly OracleSnapshot[]
+	readonly flows: readonly OracleFlowDay[]
+	readonly runsOut?: OracleRunsOut
+}
+
+interface OracleDay {
+	readonly flow: OracleFlowDay
 	readonly runsOut?: OracleRunsOut
 }
 
@@ -41,45 +54,49 @@ function processDay(
 	fixture: Fixture,
 	date: DateString,
 	events: readonly OracleEvent[],
-): OracleRunsOut | undefined {
+): OracleDay {
 	const { scenario } = fixture
 	const inflation = scenario.economy.inflation
 	const [income, expense] = oracleIncomeExpense(events, inflation)
 	const outflow = oracleContributions(states, events, inflation, date)
 	const net = income - expense - outflow
-	if (net > 0n) {
-		oracleSurplus(states, scenario.cashflow.surplus, date, net)
-		return undefined
-	}
+	const flow = { date, income, expense, contributions: outflow }
+	if (net > 0n) oracleSurplus(states, scenario.cashflow.surplus, date, net)
 	if (net < 0n) {
 		const remaining = oracleWithdraw(states, scenario, date, -net)
-		if (remaining > 0n) return { date, unmet: remaining }
+		if (remaining > 0n) return { flow, runsOut: { date, unmet: remaining } }
 	}
-	return undefined
+	return { flow }
 }
 
-export function oracleRun(fixture: Fixture, observations: readonly DateString[]): OracleRun {
+function eventsByDate(fixture: Fixture): ReadonlyMap<DateString, readonly OracleEvent[]> {
 	const { scenario, timeline } = fixture
-	const inflation = scenario.economy.inflation
-	const states = createStates(fixture)
 	const byDate = new Map<DateString, OracleEvent[]>()
 	for (const event of oracleEvents(scenario.flows, timeline.start, timeline.horizon)) {
 		const list = byDate.get(event.date) ?? []
 		list.push(event)
 		byDate.set(event.date, list)
 	}
+	return byDate
+}
+
+export function oracleRun(fixture: Fixture, observations: readonly DateString[]): OracleRun {
+	const { scenario, timeline } = fixture
+	const inflation = scenario.economy.inflation
+	const states = createStates(fixture)
+	const byDate = eventsByDate(fixture)
 	const wanted = new Set<DateString>(observations)
 	const snapshots: OracleSnapshot[] = []
+	const flows: OracleFlowDay[] = []
 	for (let date = timeline.start; date <= timeline.horizon; date = oracleAddDays(date, 1)) {
 		const day = byDate.get(date)
-		const runsOut = day === undefined ? undefined : processDay(states, fixture, date, day)
-		if (runsOut !== undefined) {
-			snapshots.push(oracleSnapshot(states, date, timeline.start, inflation))
-			return { snapshots, runsOut }
-		}
-		if (wanted.has(date)) {
+		const outcome = day === undefined ? undefined : processDay(states, fixture, date, day)
+		if (outcome !== undefined) flows.push(outcome.flow)
+		const stop = outcome?.runsOut
+		if (stop !== undefined || wanted.has(date)) {
 			snapshots.push(oracleSnapshot(states, date, timeline.start, inflation))
 		}
+		if (stop !== undefined) return { snapshots, flows, runsOut: stop }
 	}
-	return { snapshots }
+	return { snapshots, flows }
 }

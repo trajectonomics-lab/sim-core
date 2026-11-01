@@ -47,7 +47,7 @@ export function buildRollups(
 		const sums = sumFlows(run.totals, period)
 		const closing = snapshots.get(period.to)!.netWorth
 		const unmet = run.runsOut?.date === period.to ? run.runsOut.unmet : 0n
-		const interest = closing - openingWorth - sums.income + sums.expense + unmet
+		const interest = closing - openingWorth - sums.income + sums.expense - unmet
 		const problem = unsafe(
 			[openingWorth, closing, sums.income, sums.expense, sums.contributions, interest, unmet],
 			period.to,

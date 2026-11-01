@@ -4,6 +4,7 @@ import type { Projection, ProjectionProblem } from "../types/projection"
 import { openingNetWorth } from "./opening"
 import { buildPeriods } from "./periods"
 import { buildRollups } from "./rollups"
+import { rowDates } from "./row-dates"
 import { buildRows } from "./rows"
 import { accountRules } from "./rules"
 
@@ -18,7 +19,11 @@ export function buildProjection(
 	timeline: Timeline,
 ): BuildResult {
 	const rules = accountRules(scenario)
-	const rows = buildRows(run.snapshots, timeline, rules, scenario.economy.inflation)
+	const reported = new Set<string>(rowDates(timeline))
+	const shown = run.snapshots.filter(
+		(snapshot) => reported.has(snapshot.date) || snapshot.date === run.runsOut?.date,
+	)
+	const rows = buildRows(shown, timeline, rules, scenario.economy.inflation)
 	if (rows.problem !== undefined) return { problem: rows.problem }
 	const end = run.runsOut?.date ?? timeline.horizon
 	const periods = buildPeriods(timeline.start, end, run.runsOut?.date)

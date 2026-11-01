@@ -23,8 +23,14 @@ export function dayNumber(date: DateString): number {
 	return daysBeforeYear(year) + daysBeforeMonth(year, month) + day - 1
 }
 
-/** Inverse of `dayNumber`; no wall clock is involved. */
+const FIRST_DATE: DateString = "0001-01-01"
+const LAST_DATE: DateString = "9999-12-31"
+const LAST_DAY = dayNumber(LAST_DATE)
+
+/** Inverse of `dayNumber`, saturating at the supported range; no wall clock is involved. */
 export function fromDayNumber(value: number): DateString {
+	if (value <= 0) return FIRST_DATE
+	if (value >= LAST_DAY) return LAST_DATE
 	let year = Math.floor(value / 366) + 1
 	while (daysBeforeYear(year + 1) <= value) year++
 	while (daysBeforeYear(year) > value) year--
@@ -46,6 +52,7 @@ export function addMonthsClamped(date: DateString, months: number): DateString {
 	const { year, month, day } = parseDate(date)
 	const total = year * 12 + (month - 1) + months
 	const targetYear = Math.floor(total / 12)
+	if (targetYear > 9999) return LAST_DATE
 	const targetMonth = (((total % 12) + 12) % 12) + 1
 	return formatDate({
 		year: targetYear,

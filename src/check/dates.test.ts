@@ -7,7 +7,7 @@ const lockedUntil = (value: unknown) =>
 const invalid = expected("INVALID_DATE", ["scenario", "accounts", 2, "lockedUntil"])
 
 describe("check() date validity", () => {
-	it.each(["2024-02-29", "2000-02-29", "0001-01-01", "9999-12-31"])("accepts %s", (value) => {
+	it.each(["2024-02-29", "2000-02-29", "0001-01-01", "9998-12-31"])("accepts %s", (value) => {
 		expect(lockedUntil(value)).toEqual([])
 	})
 
@@ -19,6 +19,7 @@ describe("check() date validity", () => {
 		["month 00", "2025-00-10"],
 		["day 00", "2025-01-00"],
 		["year 0000", "0000-01-01"],
+		["year 9999", "9999-01-01"],
 		["an unpadded month", "2025-1-10"],
 		["a datetime", "2025-01-10T00:00"],
 		["a trailing newline", "2025-01-10\n"],
