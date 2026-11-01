@@ -1,55 +1,74 @@
 name: Release
 
+# Every push to main publishes an alpha (npm dist-tag "alpha"). Running this
+# workflow by hand on main publishes the stable version (dist-tag "latest"),
+# tags vX.Y.Z and creates a GitHub release. Versions are computed by
+# scripts/version.ts from git tags and commit messages; package.json "version"
+# is never edited by hand.
 on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**/*.md"
+      - ".agents/**"
+      - ".claude/**"
+      - ".github/**"
   workflow_dispatch:
     inputs:
-      version:
-        description: "Release version (e.g. 0.1.0 or patch/minor/major)"
-        required: true
-        type: string
-  push:
-    tags:
-      - "v*"
+      bump:
+        description: "Version bump. auto reads commit messages since the last release."
+        type: choice
+        options: [auto, patch, minor, major]
+        default: auto
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 permissions:
-  contents: write
-  id-token: write
+  contents: write # tag + GitHub release
+  id-token: write # npm provenance / trusted publishing
 
 jobs:
-  release:
-    name: Build & Publish to npm
+  publish:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    env:
+      CHANNEL: ${{ github.event_name == 'workflow_dispatch' && 'stable' || 'alpha' }}
+      DIST_TAG: ${{ github.event_name == 'workflow_dispatch' && 'latest' || 'alpha' }}
+      BUMP: ${{ inputs.bump || 'auto' }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # tags and commit messages drive the version
+      - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.4.4
-
-      - name: Setup Node for npm provenance
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
-          registry-url: "https://registry.npmjs.org"
+          registry-url: https://registry.npmjs.org
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+      - run: bun install --frozen-lockfile
+      - run: bun run check
 
-      - name: Set release version
+      - name: Compute version
+        id: version
         run: |
-          if [ -n "${{ github.event.inputs.version }}" ]; then
-            npm version "${{ github.event.inputs.version }}" --no-git-tag-version
-          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
-            TAG_VERSION="${GITHUB_REF#refs/tags/v}"
-            npm version "${TAG_VERSION}" --no-git-tag-version
-          fi
+          VERSION=$(bun scripts/version.ts --channel "$CHANNEL" --bump "$BUMP")
+          echo "Publishing $VERSION as $DIST_TAG"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          npm version "$VERSION" --no-git-tag-version
 
-      - name: Run verification checks
-        run: bun run check
+      # Trusted publishing (OIDC) needs npm >= 11.5.1; setup-node 22 ships npm 10.x.
+      - name: Upgrade npm for trusted publishing
+        run: npm install -g npm@^11.5.1
 
-      - name: Publish to npm with provenance
+      - name: Publish to npm
+        run: npm publish --tag "$DIST_TAG" --provenance
+
+      - name: Tag and GitHub release
+        if: env.CHANNEL == 'stable'
+        run: gh release create "v${{ steps.version.outputs.version }}" --target "$GITHUB_SHA" --generate-notes
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access public --provenance
+          GH_TOKEN: ${{ github.token }}
