@@ -16,6 +16,12 @@ export const safeInt: Check = (value, path, emit) => {
 	if (!Number.isSafeInteger(value)) emit("NOT_SAFE_INTEGER", path)
 }
 
+/** A safe-integer rate above -10000 bps, so a positive growth factor always exists. */
+export const rate: Check = (value, path, emit) => {
+	if (!Number.isSafeInteger(value)) return emit("NOT_SAFE_INTEGER", path)
+	if ((value as number) <= -10000) emit("RATE_OUT_OF_RANGE", path)
+}
+
 /** Non-negative safe integer minor units. */
 export const amount: Check = (value, path, emit) => {
 	if (!Number.isSafeInteger(value)) emit("NOT_SAFE_INTEGER", path)
@@ -35,5 +41,5 @@ export function oneOf(allowed: readonly string[], code: ErrorCode): Check {
 export const growth: Check = (value, path, emit) => {
 	if (value === "inflation") return
 	if (!isRecord(value)) return emit("INVALID_GROWTH", path)
-	checkShape(value, path, { bps: req(safeInt) }, emit)
+	checkShape(value, path, { bps: req(rate) }, emit)
 }

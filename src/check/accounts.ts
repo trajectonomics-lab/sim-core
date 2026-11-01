@@ -1,12 +1,12 @@
 import { ACCOUNT_KINDS } from "../vocab"
 import type { AccountIndex, Check, Emit, Path } from "./codes"
-import { date, oneOf, safeInt, str } from "./scalars"
+import { date, oneOf, rate, str } from "./scalars"
 import { checkShape, checkUnique, isRecord, list, opt, req } from "./shape"
 
 const shape = {
 	id: req(str),
 	kind: req(oneOf(ACCOUNT_KINDS, "INVALID_KIND")),
-	rate: req(safeInt),
+	rate: req(rate),
 	lockedUntil: opt(date),
 }
 

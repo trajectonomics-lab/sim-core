@@ -33,7 +33,7 @@ describe("check() ids and references", () => {
 	})
 
 	it("rejects a repeated account in surplus", () => {
-		const step = { account: "cash", upTo: 5 }
+		const step = { account: "cash" }
 		expect(problemsFor({ scenario: [["cashflow", "surplus", 2], step] })).toEqual(
 			expected("DUPLICATE_ID", ["scenario", "cashflow", "surplus", 2, "account"]),
 		)
