@@ -14,8 +14,10 @@ Instructions for AI coding agents in `trajectonomics-lab/sim-core` (`@trajectono
    - Cognitive complexity: max 10 per function (enforced by Biome).
    - Strict isolatedDeclarations typecheck (`tsc -p tsconfig.json && tsc -p tsconfig.test.json`).
    - Clean package build (`tsdown`), strict packaging (`publint --strict`), and node16 type checks (`attw`).
+   - Cross-runtime parity: the built package under Node hashes identically to `parity/cases.json` (recorded under Bun). After an intended numeric change run `bun run parity:update`.
    - Run `bun run format` to auto-fix formatting and imports. Do not loosen `tsconfig.base.json` or `biome.json` to make an error go away.
 6. Never edit `version` in `package.json` manually and never run `npm publish` locally. Releases are handled via GitHub Actions workflows or git tags (`v*`). PR titles should follow conventional commits (`feat:`, `fix:`, `chore:`, `feat!:` ...).
+7. Review against `CODING_STANDARDS.md`.
 
 ## Core Simulation Principles
 
