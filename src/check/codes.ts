@@ -20,6 +20,8 @@ const CODES = [
 	"UNKNOWN_ACCOUNT",
 	"UNDECLARED_BALANCE_ACCOUNT",
 	"LIABILITY_MISUSE",
+	"SURPLUS_UNROUTED",
+	"RATE_OUT_OF_RANGE",
 ] as const
 
 /** The closed set of problem codes. Frozen so consumers cannot mutate it at runtime. */

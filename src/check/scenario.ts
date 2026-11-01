@@ -2,11 +2,11 @@ import { checkAccounts } from "./accounts"
 import { checkCashflow } from "./cashflow"
 import type { AccountIndex, Check, Emit, Path } from "./codes"
 import { checkFlows } from "./flows"
-import { safeInt, str } from "./scalars"
+import { rate, str } from "./scalars"
 import { anyVersion, checkShape, req } from "./shape"
 
 const economy: Check = (value, path, emit) => {
-	checkShape(value, path, { inflation: req(safeInt) }, emit)
+	checkShape(value, path, { inflation: req(rate) }, emit)
 }
 
 export function checkScenario(
