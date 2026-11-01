@@ -1,6 +1,7 @@
 /**
  * TEST-ONLY helpers (edit the Thai-employee fixture, assert exact problem lists). Not part of the
- * published API: `src/index.ts` must never re-export this file, and the build excludes it.
+ * published API: it stays out of `dist` only because nothing in `src/index.ts` imports it, so
+ * `src/index.ts` must never re-export this file.
  */
 import { check } from "./check"
 import type { ErrorCode, Path, Problem } from "./check/codes"

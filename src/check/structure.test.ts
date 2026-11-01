@@ -42,6 +42,14 @@ describe("check() structure", () => {
 		)
 	})
 
+	it("skips baseline account lookups when the scenario version is unsupported", () => {
+		const problems = problemsFor({
+			scenario: [["schemaVersion"], 2],
+			baseline: [["balances", 0, "account"], "not-declared"],
+		})
+		expect(problems).toEqual(expected("UNSUPPORTED_SCHEMA_VERSION", ["scenario", "schemaVersion"]))
+	})
+
 	it("rejects a missing schemaVersion", () => {
 		expect(problemsFor({ baseline: [["schemaVersion"], REMOVE] })).toEqual(
 			expected("UNSUPPORTED_SCHEMA_VERSION", ["baseline", "schemaVersion"]),
