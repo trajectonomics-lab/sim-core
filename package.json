@@ -5,7 +5,7 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/trajectonomics-lab/sim-core.git"
+		"url": "git+https://github.com/trajectonomics/sim-core.git"
 	},
 	"type": "module",
 	"sideEffects": false,

@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Instructions for AI coding agents in `trajectonomics-lab/sim-core` (`@trajectonomics/sim-core` on npm).
+Instructions for AI coding agents in `trajectonomics/sim-core` (`@trajectonomics/sim-core` on npm).
 
 ## Rules
 
@@ -30,7 +30,7 @@ Instructions for AI coding agents in `trajectonomics-lab/sim-core` (`@trajectono
 
 ### Issue tracker
 
-GitHub Issues in `trajectonomics-lab/sim-core`, via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+GitHub Issues in `trajectonomics/sim-core`, via the `gh` CLI. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
@@ -42,7 +42,7 @@ Single-context: one `GLOSSARY.md` and `docs/adr/` at the repo root. See `docs/ag
 
 ### Installing and updating skills
 
-Skills come from [`mattpocock/skills`](https://github.com/mattpocock/skills) and [`trajectonomics-lab/internal-skills`](https://github.com/trajectonomics-lab/internal-skills) via the Vercel [`skills`](https://github.com/vercel-labs/skills) CLI and are pinned in `skills-lock.json`. The canonical copy is `.agents/skills/` (read natively by Codex, OpenCode, Pi, and Antigravity CLI); `.claude/skills/` holds symlinks into it for Claude Code. Never edit them by hand.
+Skills come from [`mattpocock/skills`](https://github.com/mattpocock/skills) and [`trajectonomics/internal-skills`](https://github.com/trajectonomics/internal-skills) via the Vercel [`skills`](https://github.com/vercel-labs/skills) CLI and are pinned in `skills-lock.json`. The canonical copy is `.agents/skills/` (read natively by Codex, OpenCode, Pi, and Antigravity CLI); `.claude/skills/` holds symlinks into it for Claude Code. Never edit them by hand.
 
 - Update: `npx skills update -p -y`
 - Reinstall: `npx skills add mattpocock/skills --skill '*' -a claude-code codex opencode antigravity-cli pi -y`
