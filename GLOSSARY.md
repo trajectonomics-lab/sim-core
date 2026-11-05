@@ -70,7 +70,7 @@ The date of the first Shortfall, recorded with the unmet amount. Absent when mon
 _Avoid_: Depletion date, bankruptcy
 
 **Net worth / Accessible net worth**:
-Net worth counts every Account, including locked ones. Accessible net worth leaves out Accounts before their `lockedUntil`; it is what Cashflow can actually draw on.
+Net worth is every Account's value with liabilities subtracted, including locked assets. Accessible net worth does the same but leaves out assets before their `lockedUntil`; it is not the same as the subset the `withdraw` list can draw on.
 _Avoid_: Liquid assets, spendable
 
 **Financial Independence (FI)**:
