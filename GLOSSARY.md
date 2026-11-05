@@ -39,14 +39,30 @@ A dated cash movement of kind `income`, `expense` or `contribution`, with a freq
 _Avoid_: Stream, Event, Transaction, Recurring transaction, Schedule
 
 **Contribution**:
-A Flow that moves money from cashflow into an Account. Not an expense: net worth is unchanged at that instant. A debt payment is a contribution into a liability account.
+A Flow that moves money from cashflow into an Account. Not an expense: net worth is unchanged at that instant. Into a liability account it is a debt payment and an obligation. Into an asset account it is a target: it is limited to the Available cashflow on that Occurrence and is never funded from existing assets. Same-date amounts are summed per Account, and `cashflow.contribute` sets the funding priority.
+
+**Available cashflow**:
+The income on one Occurrence minus its expenses and debt payments actually made, floored at zero. Other dates are ignored; this is the ceiling for asset contributions.
+_Avoid_: Free cashflow, disposable income
+
+**Unfunded contribution**:
+The part of an asset contribution's planned amount, after same-date summing per Account, that Available cashflow could not cover. It is dropped, not carried over. Debt planned above the amount owed is not unfunded.
+_Avoid_: Missed contribution
+
+**Earned income**:
+Income from work, marked `earned: true`. It is the only income that stops in the FI test.
+_Avoid_: Active income, salary income
+
+**Passive income**:
+Income marked `earned: false`. It continues when earned income stops.
+_Avoid_: Investment income, unearned income
 
 **Cashflow**:
-The routing rules for net money each time flows land: ordered `surplus` steps (account, optional fixed `upTo`) and an ordered `withdraw` list.
+The routing rules for net money each time flows land: ordered `surplus` steps (account, optional fixed `upTo`), an ordered `contribute` list of asset accounts (funding priority), and an ordered `withdraw` list.
 _Avoid_: Income/expense delta
 
 **Shortfall**:
-Money owed on an Occurrence that no unlocked Account in the `withdraw` list can supply. The Projection ends on that date. The engine never refuses a Flow because of it; callers adjust their own rules (for example, not funding a locked Account while short).
+Money owed on an Occurrence that no unlocked Account in the `withdraw` list can supply. Expenses and debt payments are never refused; asset contributions are capped before this point. A debt payment can cause one; an asset contribution cannot. The Projection ends on that date.
 _Avoid_: Overdraft, deficit
 
 **Runs-out date**:
@@ -54,12 +70,24 @@ The date of the first Shortfall, recorded with the unmet amount. Absent when mon
 _Avoid_: Depletion date, bankruptcy
 
 **Net worth / Accessible net worth**:
-Net worth counts every Account, including locked ones. Accessible net worth leaves out Accounts before their `lockedUntil`; it is what Cashflow can actually draw on.
+Net worth is every Account's value with liabilities subtracted, including locked assets. Accessible net worth does the same but leaves out assets before their `lockedUntil`; it is not the same as the subset the `withdraw` list can draw on.
 _Avoid_: Liquid assets, spendable
 
 **Financial Independence (FI)**:
-The milestone point along a Projection timeline where passive cashflow or sustainable portfolio withdrawals reliably cover projected living expenses.
+The earliest month in which earned income can stop and the Projection has no Shortfall through the horizon. The FI method fixes the exact test and any extra condition, such as a minimum buffer.
 _Avoid_: Retirement, target date
+
+**Financial Independence month**:
+The first day of the earliest month at which the FI test passes. It is a date; age is a caller concern.
+_Avoid_: FI date, retirement date
+
+**Retirement spending**:
+The monthly spending that replaces planned expenses from the FI month onward when the FI method is given an override.
+_Avoid_: Post-retirement expenses, withdrawal rate
+
+**Minimum buffer**:
+The number of months of expenses the FI method requires as accessible net worth.
+_Avoid_: Emergency fund, cash reserve
 
 ## Input Conventions
 
