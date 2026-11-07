@@ -1,10 +1,5 @@
 import type { Measure } from "../types"
-import { REF_KEYS } from "./refs"
-
-function operandsOf(measure: Measure): readonly string[] {
-	const keys = REF_KEYS[measure.op] ?? []
-	return keys.map((key) => (measure as unknown as Readonly<Record<string, string>>)[key]!)
-}
+import { operandsOf } from "./refs"
 
 /**
  * Measures in dependency order: every Measure comes after the ones it reads. Needs a Levy that

@@ -2,17 +2,21 @@ import { isSafeInteger } from "../engine/overflow"
 import type { Levy, LevyContext, MeasuresResult, Tallies } from "../types"
 import { dependencyOrder } from "./order"
 import { step } from "./step"
+import { unsafeTally } from "./tallies"
 
 /**
  * Evaluates every Measure of a Levy in exact BigInt arithmetic. `levy` must have passed `check()`.
  * A Measure whose exact value is not a safe integer yields `VALUE_OVERFLOW` at `context.date`
- * instead of a value. The result map follows the Levy's own Measure order.
+ * instead of a value; a tally a Measure reads that is not a safe integer yields `NOT_SAFE_INTEGER`
+ * at `[basis, label]`. The result map follows the Levy's own Measure order.
  */
 export function evaluateMeasures(
 	levy: Levy,
 	tallies: Tallies,
 	context: LevyContext,
 ): MeasuresResult {
+	const unsafe = unsafeTally(levy.measures, tallies)
+	if (unsafe !== undefined) return { ok: false, problem: unsafe }
 	const exact = new Map<string, bigint>()
 	const get = (id: string): bigint => {
 		const value = exact.get(id)

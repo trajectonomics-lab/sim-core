@@ -25,11 +25,11 @@ export function flowShape(
 	hasLevy: boolean,
 ): Shape {
 	const target = accountRef(accounts)
-	const [tally, prepaid] = [label(hasLevy), prepaymentBps(hasLevy)]
-	if (kind === "income") return { ...base, earned: req(bool), label: tally, prepaymentBps: prepaid }
+	const levied = { label: label(hasLevy), prepaymentBps: prepaymentBps(hasLevy) }
+	if (kind === "income") return { ...base, earned: req(bool), ...levied }
 	if (kind === "contribution") {
-		return { ...base, target: req(target), label: tally, prepaymentBps: NOT_ALLOWED }
+		return { ...base, target: req(target), ...levied, prepaymentBps: NOT_ALLOWED }
 	}
 	if (kind === "expense") return { ...base, label: NOT_ALLOWED, prepaymentBps: NOT_ALLOWED }
-	return { ...base, earned: opt(bool), target: opt(target), label: tally, prepaymentBps: prepaid }
+	return { ...base, earned: opt(bool), target: opt(target), ...levied }
 }

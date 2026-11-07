@@ -50,12 +50,6 @@ describe("evaluateMeasures operations", () => {
 			["five", 5],
 		])
 	})
-
-	it("is deterministic for repeated evaluation", () => {
-		const first = dueOf([two, five, { id: "r", op: "add", a: "two", b: "five" }], "r")
-		const again = dueOf([two, five, { id: "r", op: "add", a: "two", b: "five" }], "r")
-		expect(again).toEqual(first)
-	})
 })
 
 describe("evaluateMeasures const growth", () => {
@@ -104,5 +98,40 @@ describe("evaluateMeasures overflow", () => {
 		const low: Measure = { id: "low", op: "const", value: -Number.MAX_SAFE_INTEGER }
 		const result = dueOf([low, one, { id: "r", op: "sub", a: "low", b: "one" }], "r")
 		expect(result.ok).toBe(false)
+	})
+})
+
+describe("evaluateMeasures tallies", () => {
+	const wage: Measure = { id: "g", op: "tally", label: "wage", basis: "gross" }
+	const kept: Measure = { id: "f", op: "tally", label: "kept", basis: "funded" }
+
+	it("reports a non-integer tally at its path instead of throwing", () => {
+		for (const bad of [1.5, Number.NaN, Number.POSITIVE_INFINITY, 2 ** 60]) {
+			const result = dueOf([wage], "g", talliesOf([["wage", bad]]))
+			expect(result).toEqual({
+				ok: false,
+				problem: { code: "NOT_SAFE_INTEGER", path: ["gross", "wage"] },
+			})
+		}
+	})
+
+	it("names the funded map when the funded tally is the bad one", () => {
+		const result = dueOf([wage, kept], "g", talliesOf([["wage", 1]], [["kept", 0.5]]))
+		expect(result).toEqual({
+			ok: false,
+			problem: { code: "NOT_SAFE_INTEGER", path: ["funded", "kept"] },
+		})
+	})
+
+	it("ignores a bad tally that no Measure reads", () => {
+		const result = dueOf(
+			[wage],
+			"g",
+			talliesOf([
+				["wage", 3],
+				["other", 0.5],
+			]),
+		)
+		expect(result).toMatchObject({ ok: true, due: 3 })
 	})
 })

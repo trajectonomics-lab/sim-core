@@ -1,11 +1,8 @@
 import type { Check } from "./codes"
-import { str } from "./scalars"
+import { boundedInt, str } from "./scalars"
 import { type Field, opt } from "./shape"
 
-const prepayment: Check = (value, path, emit) => {
-	if (!Number.isSafeInteger(value)) emit("NOT_SAFE_INTEGER", path)
-	else if ((value as number) < 0 || (value as number) > 10_000) emit("RATE_OUT_OF_RANGE", path)
-}
+const prepayment: Check = boundedInt(0, 10_000, "RATE_OUT_OF_RANGE")
 
 /** A field only a Levy gives meaning to: without one, it is reported instead of checked. */
 function needsLevy(hasLevy: boolean, check: Check): Field {

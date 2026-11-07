@@ -1,12 +1,9 @@
 import { MEASURE_OPS, ROUNDINGS, TALLY_BASES } from "../vocab"
 import type { Check } from "./codes"
-import { date, growth, oneOf, safeInt, str } from "./scalars"
+import { boundedInt, date, growth, oneOf, safeInt, str } from "./scalars"
 import { checkShape, isRecord, opt, req, type Shape } from "./shape"
 
-const denominator: Check = (value, path, emit) => {
-	if (!Number.isSafeInteger(value)) emit("NOT_SAFE_INTEGER", path)
-	else if ((value as number) < 1) emit("INVALID_DENOMINATOR", path)
-}
+const denominator: Check = boundedInt(1, Infinity, "INVALID_DENOMINATOR")
 
 const operands = { a: req(str), b: req(str) }
 

@@ -1,4 +1,4 @@
-import { REF_KEYS } from "../levy/refs"
+import { refKeysOf } from "../levy/refs"
 import type { Emit, Path } from "./codes"
 import { isRecord } from "./shape"
 
@@ -16,16 +16,12 @@ function indexIds(measures: readonly unknown[]): Map<string, number> {
 	return ids
 }
 
-function refKeysOf(item: Readonly<Record<string, unknown>>): readonly string[] {
-	const op = item["op"]
-	return typeof op === "string" && Object.hasOwn(REF_KEYS, op) ? (REF_KEYS[op] ?? []) : []
-}
-
 /** Edges of one Measure; a reference to an id that is not a Measure is reported instead. */
 function edgesOf(item: unknown, at: Path, ids: Map<string, number>, emit: Emit): Edge[] {
 	if (!isRecord(item)) return []
 	const edges: Edge[] = []
-	for (const key of refKeysOf(item)) {
+	const op = item["op"]
+	for (const key of typeof op === "string" ? refKeysOf(op) : []) {
 		const target = item[key]
 		const to = typeof target === "string" ? ids.get(target) : undefined
 		if (to !== undefined) edges.push({ to, path: [...at, key] })

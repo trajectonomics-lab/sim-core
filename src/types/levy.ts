@@ -1,6 +1,6 @@
 import type { MEASURE_OPS, ROUNDINGS, TALLY_BASES } from "../vocab"
 import type { BasisPoints, DateString, Growth, MinorUnits } from "./common"
-import type { ValueOverflowProblem } from "./projection"
+import type { InputProblem, ValueOverflowProblem } from "./projection"
 
 export type MeasureOp = (typeof MEASURE_OPS)[number]
 export type TallyBasis = (typeof TALLY_BASES)[number]
@@ -71,14 +71,14 @@ export interface LevyContext {
 	readonly inflation: BasisPoints
 }
 
-/** Every Measure's value by id (in Levy order) and the `due` value, or the overflow problem. */
+/** Every Measure's value by id (in Levy order) and the `due` value, or why there is none. */
 export type MeasuresResult =
 	| {
 			readonly ok: true
 			readonly values: ReadonlyMap<string, MinorUnits>
 			readonly due: MinorUnits
 	  }
-	| { readonly ok: false; readonly problem: ValueOverflowProblem }
+	| { readonly ok: false; readonly problem: ValueOverflowProblem | InputProblem }
 
 /** Closed rule set: Settlement periods start on `period`, settle on `settlement`, owe `due`. */
 export interface Levy {
