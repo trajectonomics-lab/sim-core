@@ -23,12 +23,40 @@ The deterministic output of a Baseline, Scenario and Timeline: states and cashfl
 _Avoid_: Forecast, prediction, simulation run
 
 **Occurrence**:
-A date on which at least one Flow lands. Only Occurrences change balances; the Timeline's `start` and `horizon` are both inclusive.
+A date on which at least one Flow lands or a Settlement falls. Only Occurrences change balances; the Timeline's `start` and `horizon` are both inclusive.
 _Avoid_: Tick, step, period
 
 **Annual roll-up**:
 Totals over one twelve-month period of a Projection, running from an anniversary of `start` to the day before the next one. The last period is cut short by the horizon or a Shortfall and marked partial.
 _Avoid_: Year, fiscal year
+
+**Levy**:
+A closed rule set in the Scenario that charges an amount for each Settlement period from that period's Flows: a period rule, a settlement rule and a graph of Measures. The core does not know what a Levy represents; callers, or a rule-set emitter such as tax-core, author it as data.
+_Avoid_: Tax, tax rules, formula callback, plugin
+
+**Settlement period**:
+A twelve-month period set by the Levy's period rule, over which the Levy tallies Flows before it settles. Usually a calendar year. A Settlement period and an Annual roll-up rarely cover the same days, and Levy results are reported per Settlement period.
+_Avoid_: Tax year, fiscal year, year, Annual roll-up
+
+**Measure**:
+A named value inside a Levy, computed in integer minor units from tallies, constants and other Measures. The Measures form an acyclic graph, and the Levy names the Measure that is due.
+_Avoid_: Variable, formula, derived flow
+
+**Tally label**:
+A label on an income Flow, or on a contribution Flow, that a Levy sums over a Settlement period. A Flow with no label is never tallied.
+_Avoid_: Category, tag, tax category
+
+**Prepayment**:
+An amount taken at source from an income Flow, as a share in basis points of each Occurrence's gross amount. Only the net lands in cash. The period's total is credited against the Levy at Settlement.
+_Avoid_: Withholding, prepaid tax
+
+**Settlement**:
+The one date after a Settlement period ends on which the Levy's due amount is reconciled against Prepayment. A balance due is paid like an expense and a refund lands like income. The date comes from the Levy's settlement rule.
+_Avoid_: Tax settlement, filing, payment
+
+**Carry-in**:
+The tallies and Prepayment already recorded for a Settlement period that began before `start`, supplied by the caller because the Baseline holds balances only. It covers the period containing `start` and any earlier period whose Settlement falls after `start`.
+_Avoid_: Year-to-date, opening income
 
 **Account**:
 A named balance with an explicit rule in the Scenario: `kind` (`asset` or `liability`), effective annual rate in basis points (one year grows the balance by exactly the rate), optional `lockedUntil`. Every account with a balance must have a rule. A liability's balance is the positive amount owed.
